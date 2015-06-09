@@ -5,9 +5,24 @@ EX_GRAPH0={0:set([1,2]),
            1:set([]),
            2:set([])
     }
-EX_GRAPH1={
+EX_GRAPH1={0:set([1,4,5]),
+           1:set([2,6]),
+           2:set([3]),
+           3:set([0]),
+           4:set([1]),
+           5:set([2]),
+           6:set([])
     }
-EX_GRAPH2={
+EX_GRAPH2={0:set([1,4,5]),
+           1:set([2,6]),
+           2:set([3,7]),
+           3:set([7]),
+           4:set([1]),
+           5:set([2]),
+           6:set([]),
+           7:set([3]),
+           8:set([1,2]),
+           9:set([0,3,4,5,6,7])
     }
 def make_complete_graph(num_nodes):
     """
@@ -34,7 +49,7 @@ def compute_in_degrees(digraph):
     """
     dic = dict((x,0) for x in digraph.keys())
     for out_node in digraph:
-        for in_node in digraph[i]:
+        for in_node in digraph[out_node]:
             if not in_node in dic:
                 dic[in_node] = 0
             dic[in_node] += 1
@@ -52,12 +67,12 @@ def in_degree_distribution(digraph):
     return res
 
 
-if __name__ == '__main__':
-    test = {0:[1,2],1:[2,3]}
-    res1 = compute_in_degrees(test)
-    res2 = in_degree_distribution(test)
-    res3 = make_complete_graph(3)
-    print 
+# if __name__ == '__main__':
+    # test = {0:[1,2],1:[2,3]}
+    # res1 = compute_in_degrees(test)
+    # res2 = in_degree_distribution(test)
+    # res3 = make_complete_graph(3)
+    # print 
         
     
             
