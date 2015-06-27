@@ -244,25 +244,48 @@ def make_ER_graph(num_nodes, p):
 
 
 if __name__ == '__main__':
+    f = open('resilience', 'w')
     answer_graph = load_graph(NETWORK_URL)
-    er_graph = make_ER_graph(1239, 0.001)
+    er_graph = make_ER_graph(1239, 0.002)
 
     #####  for the UPA graph
     ##### sum of edges 2476; sum of nodes: 1239
-    upa_graph = make_complete_graph(2) 
-    upa = UPATrial(2)
-    for i in xrange(2, 1239):
+    upa_graph = make_complete_graph(5) 
+    upa = UPATrial(5)
+    for i in xrange(5, 1239):
         upa_graph[i] = []
-        new_node_neighbors = upa.run_trial(2)
+        new_node_neighbors = upa.run_trial(5)
         for node in new_node_neighbors:
-            upa_graph[i].append(node)
+            list(upa_graph[node]).append(i)
         upa_graph[i].extend(new_node_neighbors)
 
-    keys = random.sample(range(1239), 1239)
+    for key in upa_graph:
+        upa_graph[key] = set(upa_graph[key])
+
+    # total = 0
+    # for key in upa_graph:
+    #     total += len(upa_graph[key])
+
+    # er_total = 0
+    # for key in er_graph:
+    #     er_total += len(er_graph[key])
+
+
+    # ans_total = 0
+    # for key in answer_graph:
+    #     ans_total += len(answer_graph[key])
+
+    # keys = random.sample(range(1239), 1239)
     answer_keys = random.sample(answer_graph.keys(), len(answer_graph))
+    er_keys = random.sample(er_graph.keys(), len(er_graph))
+    upa_keys = random.sample(upa_graph.keys(), len(upa_graph))
+
     answer = compute_resilience(answer_graph, answer_keys)
-    er = compute_resilience(er_graph, keys)
-    upa = compute_resilience(upa_graph, keys)
+    f.write((' '.join(map(str, answer)))+'\n')
+    er = compute_resilience(er_graph, er_keys)
+    f.write((' '.join(map(str, er)))+'\n')
+    upa = compute_resilience(upa_graph, upa_keys)
+    f.write((' '.join(map(str, upa)))+'\n')
 
     plt.plot(range(1240), answer, range(1240), er, range(1240), upa, linestyle='-')
     plt.show()
