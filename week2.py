@@ -216,6 +216,7 @@ def compute_resilience(graph, attack_order):
                 graph[key].remove(node)
 
         resilience.append(largest_cc_size(graph))
+        print len(graph)
 
     return resilience
         
@@ -280,10 +281,10 @@ if __name__ == '__main__':
     er_keys = random.sample(er_graph.keys(), len(er_graph))
     upa_keys = random.sample(upa_graph.keys(), len(upa_graph))
 
-    answer = compute_resilience(answer_graph, answer_keys)
-    f.write((' '.join(map(str, answer)))+'\n')
-    er = compute_resilience(er_graph, er_keys)
-    f.write((' '.join(map(str, er)))+'\n')
+    # answer = compute_resilience(answer_graph, answer_keys)
+    # f.write((' '.join(map(str, answer)))+'\n')
+    # er = compute_resilience(er_graph, er_keys)
+    # f.write((' '.join(map(str, er)))+'\n')
     upa = compute_resilience(upa_graph, upa_keys)
     f.write((' '.join(map(str, upa)))+'\n')
 
