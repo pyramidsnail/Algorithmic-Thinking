@@ -120,10 +120,36 @@ def targeted_order(ugraph):
         neighbors = new_graph[max_degree_node]
         new_graph.pop(max_degree_node)
         for neighbor in neighbors:
-            new_graph[neighbor].remove(max_degree_node)
+            if neighbor in new_graph and max_degree_node in new_graph[neighbor]:
+                new_graph[neighbor].remove(max_degree_node)
 
         order.append(max_degree_node)
     return order
+
+
+def fast_targeted_order(ugraph):
+    new_graph = copy_graph(ugraph)
+    
+    degreeSets = dict((x,[]) for x in range(len(new_graph)))
+    for i in new_graph:
+        degreeSets[len(new_graph[i])].append(i)
+    res = []
+    for k in range(len(ugraph)-1, -1, -1):
+        while degreeSets[k] is not None and len(degreeSets[k])>0:
+            u = degreeSets[k][0]
+            degreeSets[k].remove(u)
+            for node in ugraph[u]:
+                d = len(ugraph[node])
+                if degreeSets[d] is not None and degreeSets[d-1] is not None and node in degreeSets[d] and node in degreeSets[d-1]:
+                    degreeSets[d] = degreeSets[d].remove(node)
+                    degreeSets[d-1] = degreeSets[d-1].append(node)
+            res.append(u)
+            new_graph.pop(u, None)
+            # for key in new_graph:
+            #     if u in new_graph[key]:
+            #         new_graph[key].remove(u)
+
+    return res
     
 
 
@@ -245,12 +271,12 @@ def make_ER_graph(num_nodes, p):
 
 
 if __name__ == '__main__':
-    f = open('resilience', 'w')
+    # f = open('resilience', 'w')
     answer_graph = load_graph(NETWORK_URL)
     er_graph = make_ER_graph(1239, 0.002)
 
     #####  for the UPA graph
-    ##### sum of edges 2476; sum of nodes: 1239
+    #####  sum of edges 2476; sum of nodes: 1239
     upa_graph = make_complete_graph(5) 
     upa = UPATrial(5)
     for i in xrange(5, 1239):
@@ -260,35 +286,89 @@ if __name__ == '__main__':
             list(upa_graph[node]).append(i)
         upa_graph[i].extend(new_node_neighbors)
 
-    for key in upa_graph:
-        upa_graph[key] = set(upa_graph[key])
+    # start = time.time()
+    # targeted_order = targeted_order(upa_graph)
+    # print time.time()-start
+    # start = time.time()
+    # fast_targeted_order = fast_targeted_order(upa_graph)
+    # print time.time()-start
 
-    # total = 0
-    # for key in upa_graph:
-    #     total += len(upa_graph[key])
+    # #####  test for the running time of the two algorithms
+    # targeted_time = []
+    # fast_targeted_time = []
+    # for total in range(10, 1000, 10):
+    #     upa_graph = make_complete_graph(5) 
+    #     upa = UPATrial(5)
+    #     for i in xrange(5, total):
+    #         upa_graph[i] = []
+    #         new_node_neighbors = upa.run_trial(5)
+    #         for node in new_node_neighbors:
+    #             list(upa_graph[node]).append(i)
+    #         upa_graph[i].extend(new_node_neighbors)
 
-    # er_total = 0
-    # for key in er_graph:
-    #     er_total += len(er_graph[key])
+    #     start = time.time()
+    #     targeted_order_res = targeted_order(upa_graph)
+    #     targeted_time.append(time.time()-start)
+    #     start = time.time()
+    #     fast_targeted_order_res = fast_targeted_order(upa_graph)
+    #     fast_targeted_time.append(time.time()-start)
+    # ##### plot the time
+    # plt.plot(range(10, 1000, 10), targeted_time, label= 'targeted_order',linestyle='-')
+    # plt.plot(range(10, 1000, 10), fast_targeted_time, label = 'fast_targeted_order',linestyle='-')
+    # plt.xlabel('number of nodes')
+    # plt.ylabel('running times')
+    # plt.title('running times of choosing targets ( desktop Python )')
+    # plt.legend(bbox_to_anchor=(0., 1.05, 1., .102), loc=3,
+    #        ncol=2, mode="expand", borderaxespad=0.)
+    # plt.show()
 
 
-    # ans_total = 0
-    # for key in answer_graph:
-    #     ans_total += len(answer_graph[key])
+    # # for key in upa_graph:
+    # #     upa_graph[key] = set(upa_graph[key])
 
-    # keys = random.sample(range(1239), 1239)
-    answer_keys = random.sample(answer_graph.keys(), len(answer_graph))
-    er_keys = random.sample(er_graph.keys(), len(er_graph))
-    upa_keys = random.sample(upa_graph.keys(), len(upa_graph))
+    # # total = 0
+    # # for key in upa_graph:
+    # #     total += len(upa_graph[key])
 
-    # answer = compute_resilience(answer_graph, answer_keys)
+    # # er_total = 0
+    # # for key in er_graph:
+    # #     er_total += len(er_graph[key])
+
+
+    # # ans_total = 0
+    # # for key in answer_graph:
+    # #     ans_total += len(answer_graph[key])
+
+    # # keys = random.sample(range(1239), 1239)
+    # answer_keys = random.sample(answer_graph.keys(), len(answer_graph))
+    # er_keys = random.sample(er_graph.keys(), len(er_graph))
+    # # upa_keys = random.sample(upa_graph.keys(), len(upa_graph))
+
+    answer_keys = targeted_order(answer_graph)
+    er_keys = targeted_order(er_graph)
+    upa_keys = targeted_order(upa_graph)
+
+    answer = compute_resilience(answer_graph, answer_keys)
     # f.write((' '.join(map(str, answer)))+'\n')
-    # er = compute_resilience(er_graph, er_keys)
+    er = compute_resilience(er_graph, er_keys)
     # f.write((' '.join(map(str, er)))+'\n')
     upa = compute_resilience(upa_graph, upa_keys)
-    f.write((' '.join(map(str, upa)))+'\n')
+    # # f.write((' '.join(map(str, upa)))+'\n')
+    # f = open('resilience', 'r')
+    # lines = f.readlines()
+    # answer = lines[0].strip().split()
+    # er = lines[1].strip().split()
+    # f = open('upa_resilience', 'r')
+    # upa = f.readline().strip().split()
 
-    plt.plot(range(1240), answer, range(1240), er, range(1240), upa, linestyle='-')
+    plt.plot(range(1240), answer, label= 'computer network',linestyle='-')
+    plt.plot(range(1240), er, label = 'ER ( p=0.002 )',linestyle='-')
+    plt.plot(range(1240), upa, label = 'UPA ( m=5 )',linestyle='-')
+    plt.xlabel('number of nodes removed')
+    plt.ylabel('size of the largest connect component in the graphs')
+    plt.title('resilience plot')
+    plt.legend(bbox_to_anchor=(0., 1.05, 1., .102), loc=3,
+           ncol=3, mode="expand", borderaxespad=0.)
     plt.show()
 
 
